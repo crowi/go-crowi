@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"runtime"
 	"strconv"
 	"time"
@@ -32,8 +31,7 @@ type Client struct {
 }
 
 // NewClient...
-func NewClient() (*Client, error) {
-	apiURL := os.Getenv("CROWI_API_URL")
+func NewClient(token, apiURL string) (*Client, error) {
 	if len(apiURL) == 0 {
 		return nil, errors.New("missing api url")
 	}
@@ -43,7 +41,6 @@ func NewClient() (*Client, error) {
 		return nil, errors.Wrapf(err, "failed to parse url: %s", apiURL)
 	}
 
-	token := os.Getenv("CROWI_ACCESS_TOKEN")
 	if len(token) == 0 {
 		return nil, errors.New("missing token")
 	}
