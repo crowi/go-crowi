@@ -19,19 +19,19 @@ const version = "0.1"
 var userAgent = fmt.Sprintf("CrowiGoClient/%s (%s)", version, runtime.Version())
 
 const (
-	PagesCreateAPI    = "/_api/pages.create"
-	PagesUpdateAPI    = "/_api/pages.update"
-	AttachmentsAddAPI = "/_api/attachments.add"
+	apiPagesCreate    = "/_api/pages.create"
+	apiPagesUpdate    = "/_api/pages.update"
+	apiAttachmentsAdd = "/_api/attachments.add"
 )
 
 type Client struct {
-	Token      string
 	URL        *url.URL
+	Token      string
 	HTTPClient *http.Client
 }
 
 // NewClient...
-func NewClient(token, apiURL string) (*Client, error) {
+func NewClient(apiURL, token string) (*Client, error) {
 	if len(apiURL) == 0 {
 		return nil, errors.New("missing api url")
 	}
@@ -46,8 +46,8 @@ func NewClient(token, apiURL string) (*Client, error) {
 	}
 
 	return &Client{
-		Token:      token,
 		URL:        parsedURL,
+		Token:      token,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
@@ -69,13 +69,13 @@ func (c *Client) newRequest(method, resource string, data url.Values) (*http.Req
 }
 
 // CreatePage...
-func (c *Client) CreatePage(path, body string) (*CrowiPages, error) {
+func (c *Client) CreatePage(path, body string) (*Pages, error) {
 	data := url.Values{}
 	data.Set("access_token", c.Token)
 	data.Set("path", path)
 	data.Set("body", body)
 
-	req, err := c.newRequest("POST", PagesCreateAPI, data)
+	req, err := c.newRequest("POST", apiPagesCreate, data)
 	if err != nil {
 		return nil, err
 	}
@@ -85,12 +85,12 @@ func (c *Client) CreatePage(path, body string) (*CrowiPages, error) {
 		return nil, err
 	}
 
-	var crowi CrowiPages
-	if err := decodeBody(res, &crowi); err != nil {
+	var pages Pages
+	if err := decodeBody(res, &pages); err != nil {
 		return nil, err
 	}
 
-	return &crowi, nil
+	return &pages, nil
 }
 
 func decodeBody(resp *http.Response, out interface{}) error {

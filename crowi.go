@@ -5,18 +5,18 @@ import (
 )
 
 type Crowi struct {
-	CrowiPages       CrowiPages
-	CrowiAttachments CrowiAttachments
+	Pages       Pages
+	Attachments Attachments
 }
 
-type CrowiPages struct {
+type Pages struct {
 	Page       PagesPage  `json:"page"`
 	Attachment Attachment `json:"attachment"`
 	OK         bool       `json:"ok"`
 	Error      string     `json:"error"`
 }
 
-type CrowiAttachments struct {
+type Attachments struct {
 	Page       AttachmentsPage `json:"page"`
 	Attachment Attachment      `json:"attachment"`
 	Filename   string          `json:"filename"`

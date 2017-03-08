@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// dummy token
-	client, err := crowi.NewClient("ywAVcbOsAKKwL7y8AkwXdxkLDO1YsqXwHl4oYYwYHMw=", "http://localhost:3000")
+	client, err := crowi.NewClient("http://localhost:3000", "ywAVcbOsAKKwL7y8AkwXdxkLDO1YsqXwHl4oYYwYHMw=")
 	if err != nil {
 		log.Fatal(err)
 	}
