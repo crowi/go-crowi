@@ -93,6 +93,31 @@ func (c *Client) CreatePage(path, body string) (*Pages, error) {
 	return &pages, nil
 }
 
+// UpdatePage...
+func (c *Client) UpdatePage(pageId, body string) (*Pages, error) {
+	data := url.Values{}
+	data.Set("access_token", c.Token)
+	data.Set("page_id", pageId)
+	data.Set("body", body)
+
+	req, err := c.newRequest("POST", apiPagesUpdate, data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var pages Pages
+	if err := decodeBody(res, &pages); err != nil {
+		return nil, err
+	}
+
+	return &pages, nil
+}
+
 func decodeBody(resp *http.Response, out interface{}) error {
 	defer resp.Body.Close()
 	decoder := json.NewDecoder(resp.Body)
