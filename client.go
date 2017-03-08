@@ -85,19 +85,19 @@ func (c *Client) CreatePage(path, body string) (*Pages, error) {
 		return nil, err
 	}
 
-	var pages Pages
-	if err := decodeBody(res, &pages); err != nil {
+	var p Pages
+	if err := decodeBody(res, &p); err != nil {
 		return nil, err
 	}
 
-	return &pages, nil
+	return &p, nil
 }
 
 // UpdatePage...
-func (c *Client) UpdatePage(pageId, body string) (*Pages, error) {
+func (c *Client) UpdatePage(pageID, body string) (*Pages, error) {
 	data := url.Values{}
 	data.Set("access_token", c.Token)
-	data.Set("page_id", pageId)
+	data.Set("page_id", pageID)
 	data.Set("body", body)
 
 	req, err := c.newRequest("POST", apiPagesUpdate, data)
@@ -110,12 +110,12 @@ func (c *Client) UpdatePage(pageId, body string) (*Pages, error) {
 		return nil, err
 	}
 
-	var pages Pages
-	if err := decodeBody(res, &pages); err != nil {
+	var p Pages
+	if err := decodeBody(res, &p); err != nil {
 		return nil, err
 	}
 
-	return &pages, nil
+	return &p, nil
 }
 
 func decodeBody(resp *http.Response, out interface{}) error {
