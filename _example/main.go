@@ -36,4 +36,13 @@ func main() {
 	if !resp.OK {
 		log.Printf("%s\n", resp.Error)
 	}
+
+	resp2, err := client.AddAttachment(resp.Page.ID, "./gopher.png")
+	if err != nil {
+		panic(err)
+	}
+
+	if !resp2.OK {
+		log.Printf("%s\n", resp2.Error)
+	}
 }
