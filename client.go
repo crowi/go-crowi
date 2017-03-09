@@ -11,7 +11,6 @@ import (
 	"net/textproto"
 	"net/url"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strconv"
 	"time"
@@ -127,47 +126,6 @@ func (c *Client) fileUpload(method, resource string, params map[string]string, f
 	c.URL.Path = resource
 	urlStr := fmt.Sprintf("%v", c.URL)
 
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	body := &bytes.Buffer{}
-	w := multipart.NewWriter(body)
-	part, err := w.CreateFormFile("file", filepath.Base(filePath))
-	if err != nil {
-		return nil, err
-	}
-	_, err = io.Copy(part, file)
-
-	for key, val := range params {
-		err := w.WriteField(key, val)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	err = w.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(method, urlStr, body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", w.FormDataContentType())
-	req.Header.Set("User-Agent", userAgent)
-
-	return req, nil
-}
-
-func (c *Client) fileUpload2(method, resource string, params map[string]string, filePath string) (*http.Request, error) {
-	c.URL.Path = resource
-	urlStr := fmt.Sprintf("%v", c.URL)
-
 	var buffer bytes.Buffer
 	writer := multipart.NewWriter(&buffer)
 	for key, val := range params {
@@ -178,13 +136,13 @@ func (c *Client) fileUpload2(method, resource string, params map[string]string, 
 	}
 	{
 		header := make(textproto.MIMEHeader)
-		header.Add("Content-Disposition", "form-data; name=\"file\"; filename=\"gopher.png\"")
+		header.Add("Content-Disposition", fmt.Sprintf(`form-data; name="file"; filename="%s"`, filePath))
 		header.Add("Content-Type", "image/png")
 		fileWriter, err := writer.CreatePart(header)
 		if err != nil {
 			return nil, err
 		}
-		file, err := os.Open("gopher.png")
+		file, err := os.Open(filePath)
 		if err != nil {
 			return nil, err
 		}
@@ -197,13 +155,14 @@ func (c *Client) fileUpload2(method, resource string, params map[string]string, 
 		return nil, err
 	}
 	req.Header.Add("Content-Type", "multipart/form-data; boundary="+writer.Boundary())
+	req.Header.Set("User-Agent", userAgent)
 
 	return req, nil
 }
 
 // AddAttachment...
 func (c *Client) AddAttachment(pageID, filePath string) (*Attachments, error) {
-	req, err := c.fileUpload2("POST", apiAttachmentsAdd, map[string]string{
+	req, err := c.fileUpload("POST", apiAttachmentsAdd, map[string]string{
 		"access_token": c.Token,
 		"page_id":      pageID,
 	}, filePath)
