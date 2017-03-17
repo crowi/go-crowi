@@ -1,4 +1,4 @@
-// Package crowi provides some Crowi's APIs
+// Package crowi provides some Crowi APIs for go client.
 package crowi
 
 import (
@@ -28,19 +28,20 @@ const (
 	apiAttachmentsAdd = "/_api/attachments.add"
 )
 
-type Crowi interface {
-	PagesCreate() (*Pages, error)
-	PagesUpdate() (*Pages, error)
-	AttachmentsAdd() (*Attachments, error)
+type API interface {
+	PagesCreate() (*Crowi, error)
+	PagesUpdate() (*Crowi, error)
+	AttachmentsAdd() (*Crowi, error)
 }
 
+// Client wraps http client
 type Client struct {
 	URL        *url.URL
 	Token      string
 	HTTPClient *http.Client
 }
 
-// NewClient...
+// NewClient creates an API client
 func NewClient(apiURL, token string) (*Client, error) {
 	if len(apiURL) == 0 {
 		return nil, errors.New("missing api url")
@@ -78,7 +79,8 @@ func (c *Client) newRequest(method, resource string, data url.Values) (*http.Req
 	return req, nil
 }
 
-func (c *Client) PagesCreate(path, body string) (*Pages, error) {
+// PagesCreate...
+func (c *Client) PagesCreate(path, body string) (*Crowi, error) {
 	data := url.Values{}
 	data.Set("access_token", c.Token)
 	data.Set("path", path)
@@ -94,15 +96,16 @@ func (c *Client) PagesCreate(path, body string) (*Pages, error) {
 		return nil, err
 	}
 
-	var p Pages
-	if err := decodeBody(res, &p); err != nil {
+	var crowi Crowi
+	if err := decodeBody(res, &crowi); err != nil {
 		return nil, err
 	}
 
-	return &p, nil
+	return &crowi, nil
 }
 
-func (c *Client) PagesUpdate(pageID, body string) (*Pages, error) {
+// PagesUpdate...
+func (c *Client) PagesUpdate(pageID, body string) (*Crowi, error) {
 	data := url.Values{}
 	data.Set("access_token", c.Token)
 	data.Set("page_id", pageID)
@@ -118,12 +121,12 @@ func (c *Client) PagesUpdate(pageID, body string) (*Pages, error) {
 		return nil, err
 	}
 
-	var p Pages
-	if err := decodeBody(res, &p); err != nil {
+	var crowi Crowi
+	if err := decodeBody(res, &crowi); err != nil {
 		return nil, err
 	}
 
-	return &p, nil
+	return &crowi, nil
 }
 
 func (c *Client) fileUpload(method, resource string, params map[string]string, filePath string) (*http.Request, error) {
@@ -164,7 +167,8 @@ func (c *Client) fileUpload(method, resource string, params map[string]string, f
 	return req, nil
 }
 
-func (c *Client) AttachmentsAdd(pageID, filePath string) (*Attachments, error) {
+// AttachmentsAdd...
+func (c *Client) AttachmentsAdd(pageID, filePath string) (*Crowi, error) {
 	req, err := c.fileUpload("POST", apiAttachmentsAdd, map[string]string{
 		"access_token": c.Token,
 		"page_id":      pageID,
@@ -178,12 +182,12 @@ func (c *Client) AttachmentsAdd(pageID, filePath string) (*Attachments, error) {
 		return nil, err
 	}
 
-	var a Attachments
-	if err := decodeBody(res, &a); err != nil {
+	var crowi Crowi
+	if err := decodeBody(res, &crowi); err != nil {
 		return nil, err
 	}
 
-	return &a, nil
+	return &crowi, nil
 }
 
 func decodeBody(resp *http.Response, out interface{}) error {

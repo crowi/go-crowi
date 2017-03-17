@@ -1,6 +1,12 @@
 go-crowi
 ========
 
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
+[![Go Documentation](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)][godoc]
+
+[license]: https://github.com/b4b4r07/go-crowi/blob/master/LICENSE
+[godoc]: http://godoc.org/github.com/b4b4r07/go-crowi
+
 A Go client for Crowi APIs
 
 ## Example

@@ -4,57 +4,32 @@ import (
 	"time"
 )
 
-type Pages struct {
-	Page       PagesPage  `json:"page"`
+// Crowi represents generic api json response
+type Crowi struct {
 	Attachment Attachment `json:"attachment"`
-	OK         bool       `json:"ok"`
 	Error      string     `json:"error"`
+	Filename   string     `json:"filename"`
+	OK         bool       `json:"ok"`
+	Page       Page       `json:"page"`
 }
 
-type Attachments struct {
-	Page       AttachmentsPage `json:"page"`
-	Attachment Attachment      `json:"attachment"`
-	Filename   string          `json:"filename"`
-	OK         bool            `json:"ok"`
-	Error      string          `json:"error"`
-}
-
-type PagesPage struct {
-	Revision       PagesRevision  `json:"revision"`
-	_ID            string         `json:"_id"`
-	RedirectTo     interface{}    `json:"redirectTo"`
-	UpdatedAt      time.Time      `json:"updatedAt"`
-	LastUpdateUser LastUpdateUser `json:"lastUpdateUser"`
-	Creator        Creator        `json:"creator"`
-	Path           string         `json:"path"`
-	__V            int            `json:"__v"`
-	CreatedAt      time.Time      `json:"createdAt"`
+type Page struct {
 	CommentCount   int            `json:"commentCount"`
-	SeenUsers      []string       `json:"seenUsers"`
-	Liker          []interface{}  `json:"liker"`
-	GrantedUsers   []string       `json:"grantedUsers"`
+	CreatedAt      time.Time      `json:"createdAt"`
+	Creator        Creator        `json:"creator"`
 	Grant          int            `json:"grant"`
-	Status         string         `json:"status"`
+	GrantedUsers   []string       `json:"grantedUsers"`
 	ID             string         `json:"id"`
-}
-
-type AttachmentsPage struct {
-	Revision       AttachmentsRevision `json:"revision"`
-	_ID            string              `json:"_id"`
-	RedirectTo     interface{}         `json:"redirectTo"`
-	UpdatedAt      time.Time           `json:"updatedAt"`
-	LastUpdateUser LastUpdateUser      `json:"lastUpdateUser"`
-	Creator        Creator             `json:"creator"`
-	Path           string              `json:"path"`
-	__V            int                 `json:"__v"`
-	CreatedAt      time.Time           `json:"createdAt"`
-	CommentCount   int                 `json:"commentCount"`
-	SeenUsers      []string            `json:"seenUsers"`
-	Liker          []interface{}       `json:"liker"`
-	GrantedUsers   []string            `json:"grantedUsers"`
-	Grant          int                 `json:"grant"`
-	Status         string              `json:"status"`
-	ID             string              `json:"id"`
+	LastUpdateUser LastUpdateUser `json:"lastUpdateUser"`
+	Liker          []interface{}  `json:"liker"`
+	Path           string         `json:"path"`
+	RedirectTo     interface{}    `json:"redirectTo"`
+	Revision       Revision       `json:"revision"`
+	SeenUsers      []string       `json:"seenUsers"`
+	Status         string         `json:"status"`
+	UpdatedAt      time.Time      `json:"updatedAt"`
+	_ID            string         `json:"_id"`
+	__V            int            `json:"__v"`
 }
 
 type Attachment struct {
@@ -70,32 +45,14 @@ type Attachment struct {
 	FileSize     int       `json:"fileSize"`
 }
 
-type PagesRevision struct {
-	__V       int       `json:"__v"`
-	Author    string    `json:"author"`
-	Body      string    `json:"body"`
-	Path      string    `json:"path"`
-	_ID       string    `json:"_id"`
-	CreatedAt time.Time `json:"createdAt"`
-	Format    string    `json:"format"`
-}
-
-type AttachmentsRevision struct {
-	_ID    string `json:"_id"`
-	Author struct {
-		_ID       string    `json:"_id"`
-		Email     string    `json:"email"`
-		Username  string    `json:"username"`
-		Name      string    `json:"name"`
-		Admin     bool      `json:"admin"`
-		CreatedAt time.Time `json:"createdAt"`
-		Status    int       `json:"status"`
-	} `json:"author"`
-	Body      string    `json:"body"`
-	Path      string    `json:"path"`
-	__V       int       `json:"__v"`
-	CreatedAt time.Time `json:"createdAt"`
-	Format    string    `json:"format"`
+type Revision struct {
+	Author    interface{} `json:"author"`
+	Body      string      `json:"body"`
+	CreatedAt time.Time   `json:"createdAt"`
+	Format    string      `json:"format"`
+	Path      string      `json:"path"`
+	_ID       string      `json:"_id"`
+	__V       int         `json:"__v"`
 }
 
 type LastUpdateUser struct {
