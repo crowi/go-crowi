@@ -6,7 +6,19 @@ A Go client for Crowi APIs
 ## Example
 
 ```go
-// sample code
+client, err := crowi.NewClient("http://localhost:3000", "abcdefghijklmnopqrstuvwxyz0123456789=")
+if err != nil {
+	panic(err)
+}
+
+res, err := client.PagesCreate("/user/john/memo", "# this is a sample")
+if err != nil {
+	panic(err)
+}
+
+if !res.OK {
+	log.Printf("[ERROR] %s", res.Error)
+}
 ```
 
 ## License

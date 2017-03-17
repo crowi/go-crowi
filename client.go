@@ -28,6 +28,12 @@ const (
 	apiAttachmentsAdd = "/_api/attachments.add"
 )
 
+type Crowi interface {
+	PagesCreate() (*Pages, error)
+	PagesUpdate() (*Pages, error)
+	AttachmentsAdd() (*Attachments, error)
+}
+
 type Client struct {
 	URL        *url.URL
 	Token      string
@@ -72,8 +78,7 @@ func (c *Client) newRequest(method, resource string, data url.Values) (*http.Req
 	return req, nil
 }
 
-// CreatePage...
-func (c *Client) CreatePage(path, body string) (*Pages, error) {
+func (c *Client) PagesCreate(path, body string) (*Pages, error) {
 	data := url.Values{}
 	data.Set("access_token", c.Token)
 	data.Set("path", path)
@@ -97,8 +102,7 @@ func (c *Client) CreatePage(path, body string) (*Pages, error) {
 	return &p, nil
 }
 
-// UpdatePage...
-func (c *Client) UpdatePage(pageID, body string) (*Pages, error) {
+func (c *Client) PagesUpdate(pageID, body string) (*Pages, error) {
 	data := url.Values{}
 	data.Set("access_token", c.Token)
 	data.Set("page_id", pageID)
@@ -160,8 +164,7 @@ func (c *Client) fileUpload(method, resource string, params map[string]string, f
 	return req, nil
 }
 
-// AddAttachment...
-func (c *Client) AddAttachment(pageID, filePath string) (*Attachments, error) {
+func (c *Client) AttachmentsAdd(pageID, filePath string) (*Attachments, error) {
 	req, err := c.fileUpload("POST", apiAttachmentsAdd, map[string]string{
 		"access_token": c.Token,
 		"page_id":      pageID,

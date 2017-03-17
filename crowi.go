@@ -4,11 +4,6 @@ import (
 	"time"
 )
 
-type Crowi struct {
-	Pages       Pages
-	Attachments Attachments
-}
-
 type Pages struct {
 	Page       PagesPage  `json:"page"`
 	Attachment Attachment `json:"attachment"`

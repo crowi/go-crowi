@@ -19,7 +19,7 @@ func main() {
 		path = os.Args[1]
 	}
 
-	resp, err := client.CreatePage(path, "# this is a sample")
+	resp, err := client.PagesCreate(path, "# this is a sample")
 	if err != nil {
 		panic(err)
 	}
@@ -28,7 +28,7 @@ func main() {
 		log.Printf("%s\n", resp.Error)
 	}
 
-	resp, err = client.UpdatePage(resp.Page.ID, "# this is a sample!!")
+	resp, err = client.PagesUpdate(resp.Page.ID, "# this is a sample!!")
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +37,7 @@ func main() {
 		log.Printf("%s\n", resp.Error)
 	}
 
-	resp2, err := client.AddAttachment(resp.Page.ID, "./gopher.png")
+	resp2, err := client.AttachmentsAdd(resp.Page.ID, "./gopher.png")
 	if err != nil {
 		panic(err)
 	}
