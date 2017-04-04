@@ -28,19 +28,15 @@ type Page struct {
 	SeenUsers      []string       `json:"seenUsers"`
 	Status         string         `json:"status"`
 	UpdatedAt      time.Time      `json:"updatedAt"`
-	_ID            string         `json:"_id"`
-	__V            int            `json:"__v"`
 }
 
 type Attachment struct {
-	__V          int       `json:"__v"`
 	FileFormat   string    `json:"fileFormat"`
 	FileName     string    `json:"fileName"`
 	OriginalName string    `json:"originalName"`
 	FilePath     string    `json:"filePath"`
 	Creator      string    `json:"creator"`
 	Page         string    `json:"page"`
-	_ID          string    `json:"_id"`
 	CreatedAt    time.Time `json:"createdAt"`
 	FileSize     int       `json:"fileSize"`
 }
@@ -51,12 +47,9 @@ type Revision struct {
 	CreatedAt time.Time   `json:"createdAt"`
 	Format    string      `json:"format"`
 	Path      string      `json:"path"`
-	_ID       string      `json:"_id"`
-	__V       int         `json:"__v"`
 }
 
 type LastUpdateUser struct {
-	_ID       string    `json:"_id"`
 	Email     string    `json:"email"`
 	Username  string    `json:"username"`
 	Name      string    `json:"name"`
@@ -66,7 +59,6 @@ type LastUpdateUser struct {
 }
 
 type Creator struct {
-	_ID       string    `json:"_id"`
 	Name      string    `json:"name"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
