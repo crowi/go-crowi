@@ -1,4 +1,4 @@
-// Package crowi provides some Crowi APIs for go client.
+// Package crowi provides some Crowi APIs for Go
 package crowi
 
 import (
@@ -47,13 +47,13 @@ func NewClient(apiURL, token string) (*Client, error) {
 		return nil, errors.New("missing api url")
 	}
 
+	if len(token) == 0 {
+		return nil, errors.New("missing token")
+	}
+
 	parsedURL, err := url.ParseRequestURI(apiURL)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to parse url: %s", apiURL)
-	}
-
-	if len(token) == 0 {
-		return nil, errors.New("missing token")
 	}
 
 	return &Client{
@@ -79,7 +79,8 @@ func (c *Client) newRequest(method, resource string, data url.Values) (*http.Req
 	return req, nil
 }
 
-// PagesCreate...
+// PagesCreate makes a page in your Crowi. The request requires
+// the path and page content used for the page name
 func (c *Client) PagesCreate(path, body string) (*Crowi, error) {
 	data := url.Values{}
 	data.Set("access_token", c.Token)
@@ -104,7 +105,8 @@ func (c *Client) PagesCreate(path, body string) (*Crowi, error) {
 	return &crowi, nil
 }
 
-// PagesUpdate...
+// PagesUpdate updates the page content. A page_id is necessary to know which
+// page should be updated.
 func (c *Client) PagesUpdate(pageID, body string) (*Crowi, error) {
 	data := url.Values{}
 	data.Set("access_token", c.Token)
@@ -167,7 +169,8 @@ func (c *Client) fileUpload(method, resource string, params map[string]string, f
 	return req, nil
 }
 
-// AttachmentsAdd...
+// AttachmentsAdd attaches an image file to the page. This request requires
+// page_id and the image file path which you want to attach.
 func (c *Client) AttachmentsAdd(pageID, filePath string) (*Crowi, error) {
 	req, err := c.fileUpload("POST", apiAttachmentsAdd, map[string]string{
 		"access_token": c.Token,
