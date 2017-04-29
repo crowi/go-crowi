@@ -65,7 +65,7 @@ func NewClient(apiURL, token string) (*Client, error) {
 
 func (c *Client) newRequest(method, resource string, data url.Values) (*http.Request, error) {
 	c.URL.Path = resource
-	urlStr := fmt.Sprintf("%v", c.URL)
+	urlStr := c.URL.String()
 
 	req, err := http.NewRequest(method, urlStr, bytes.NewBufferString(data.Encode()))
 	if err != nil {
@@ -133,7 +133,7 @@ func (c *Client) PagesUpdate(pageID, body string) (*Crowi, error) {
 
 func (c *Client) fileUpload(method, resource string, params map[string]string, filePath string) (*http.Request, error) {
 	c.URL.Path = resource
-	urlStr := fmt.Sprintf("%v", c.URL)
+	urlStr := c.URL.String()
 
 	var buffer bytes.Buffer
 	writer := multipart.NewWriter(&buffer)
