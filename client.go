@@ -155,6 +155,7 @@ func (c *Client) fileUpload(method, resource string, params map[string]string, f
 		if err != nil {
 			return nil, err
 		}
+		defer file.Close()
 		io.Copy(fileWriter, file)
 	}
 	writer.Close()
