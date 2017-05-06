@@ -12,7 +12,11 @@ import (
 )
 
 func main() {
-	client, err := crowi.NewClient("http://localhost:3000", os.Getenv("CROWI_ACCESS_TOKEN"))
+	config := crowi.Config{
+		URL:   "http://localhost:3000",
+		Token: os.Getenv("CROWI_ACCESS_TOKEN"),
+	}
+	client, err := crowi.NewClient(config)
 	if err != nil {
 		panic(err)
 	}

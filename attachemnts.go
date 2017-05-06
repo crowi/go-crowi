@@ -16,7 +16,7 @@ type AttachmentsService service
 func (s *AttachmentsService) Add(ctx context.Context, id, file string) (*Attachment, error) {
 	var at Attachment
 	params := map[string]string{
-		"access_token": s.client.Token,
+		"access_token": s.client.config.Token,
 		"page_id":      id,
 	}
 	err := s.client.newRequestWithFile(ctx, http.MethodPost, "/_api/attachments.add", params, &at, file)
@@ -30,7 +30,7 @@ func (s *AttachmentsService) Add(ctx context.Context, id, file string) (*Attachm
 func (s *AttachmentsService) List(ctx context.Context, id string) (*Attachments, error) {
 	var at Attachments
 	params := url.Values{}
-	params.Set("access_token", s.client.Token)
+	params.Set("access_token", s.client.config.Token)
 	params.Set("page_id", id)
 	err := s.client.newRequest(ctx, http.MethodGet, "/_api/attachments.list", params, &at)
 	if err != nil {

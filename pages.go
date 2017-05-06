@@ -17,7 +17,7 @@ type PagesService service
 func (s *PagesService) Create(ctx context.Context, path, body string) (*Page, error) {
 	var page Page
 	params := url.Values{}
-	params.Set("access_token", s.client.Token)
+	params.Set("access_token", s.client.config.Token)
 	params.Set("path", path)
 	params.Set("body", body)
 	err := s.client.newRequest(ctx, http.MethodPost, "/_api/pages.create", params, &page)
@@ -32,7 +32,7 @@ func (s *PagesService) Create(ctx context.Context, path, body string) (*Page, er
 func (s *PagesService) Update(ctx context.Context, id, body string) (*Page, error) {
 	var page Page
 	params := url.Values{}
-	params.Set("access_token", s.client.Token)
+	params.Set("access_token", s.client.config.Token)
 	params.Set("page_id", id)
 	params.Set("body", body)
 	err := s.client.newRequest(ctx, http.MethodPost, "/_api/pages.update", params, &page)
@@ -52,7 +52,7 @@ type PagesListOptions struct {
 func (s *PagesService) List(ctx context.Context, path, user string, opt *PagesListOptions) (*Pages, error) {
 	var pages Pages
 	params := url.Values{}
-	params.Set("access_token", s.client.Token)
+	params.Set("access_token", s.client.config.Token)
 	params.Set("path", path)
 	params.Set("user", user)
 	err := s.client.newRequest(ctx, http.MethodGet, "/_api/pages.list", params, &pages)
