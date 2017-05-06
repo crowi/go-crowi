@@ -30,6 +30,19 @@ type Client struct {
 
 	URL   string
 	Token string
+
+	common service // Reuse a single struct instead of allocating one for each service on the heap.
+
+	Pages       *PagesService
+	Attachments *AttachmentsService
+}
+
+type service struct {
+	client *Client
+}
+
+type ListOptions struct {
+	Pagenation bool
 }
 
 func NewClient(apiURL, token string) (*Client, error) {
@@ -45,12 +58,16 @@ func NewClient(apiURL, token string) (*Client, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	return &Client{
-		// Client: *http.DefaultClient,
+	c := &Client{
 		Client: http.Client{Transport: tr},
 		URL:    apiURL,
 		Token:  token,
-	}, nil
+	}
+	c.common.client = c
+	c.Pages = (*PagesService)(&c.common)
+	c.Attachments = (*AttachmentsService)(&c.common)
+
+	return c, nil
 }
 
 func (c *Client) newRequest(ctx context.Context, method string, uri string, params interface{}, res interface{}) error {

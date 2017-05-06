@@ -19,7 +19,9 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	res, err := client.PagesList(ctx, "/user/john", "")
+	res, err := client.Pages.List(ctx, "", os.Getenv("USER"), &crowi.PagesListOptions{
+		ListOptions: crowi.ListOptions{Pagenation: true},
+	})
 	if err != nil {
 		panic(err)
 	}

@@ -25,7 +25,7 @@ func main() {
 		body = "# this is a sample\n\ntest"
 	)
 
-	res, err := client.PagesCreate(ctx, path, body)
+	res, err := client.Pages.Create(ctx, path, body)
 	if err != nil {
 		panic(err)
 	}
@@ -36,7 +36,7 @@ func main() {
 	}
 
 	body = "changed"
-	res, err = client.PagesUpdate(ctx, res.Page.ID, body)
+	res, err = client.Pages.Update(ctx, res.Page.ID, body)
 	if err != nil {
 		panic(err)
 	}

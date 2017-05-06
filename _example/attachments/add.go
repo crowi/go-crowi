@@ -24,24 +24,24 @@ func main() {
 		body = "# this is a sample\n\ntest"
 	)
 
-	res1, err := client.PagesCreate(ctx, path, body)
+	res1, err := client.Pages.Create(ctx, path, body)
 	if err != nil {
 		panic(err)
 	}
 
-	res2, err := client.AttachmentsAdd(ctx, res1.Page.ID, "_example/attachments/sample.png")
+	res2, err := client.Attachments.Add(ctx, res1.Page.ID, "_example/attachments/sample.png")
 	if err != nil {
 		panic(err)
 	}
 	pp.Println(res2)
 
-	res3, err := client.AttachmentsList(ctx, res1.Page.ID)
+	res3, err := client.Attachments.List(ctx, res1.Page.ID)
 	if err != nil {
 		panic(err)
 	}
 
 	// body = fmt.Sprintf("![](%s)", res3.URL)
-	_, err = client.PagesUpdate(ctx, res1.Page.ID, body)
+	_, err = client.Pages.Update(ctx, res1.Page.ID, body)
 	if err != nil {
 		panic(err)
 	}

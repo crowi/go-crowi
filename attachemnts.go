@@ -7,60 +7,59 @@ import (
 	"time"
 )
 
-func (c *Client) AttachmentsAdd(ctx context.Context, id, file string) (*Attachments, error) {
-	var at Attachments
+// AttachmentsService handles communication with the Attachments related
+// methods of the Crowi API.
+type AttachmentsService service
+
+// Add attaches an image file to the page. This request requires
+// page_id and the image file path which you want to attach.
+func (s *AttachmentsService) Add(ctx context.Context, id, file string) (*Attachment, error) {
+	var at Attachment
 	params := map[string]string{
-		"access_token": c.Token,
+		"access_token": s.client.Token,
 		"page_id":      id,
 	}
-	err := c.newRequestWithFile(ctx, http.MethodPost, "/_api/attachments.add", params, &at, file)
+	err := s.client.newRequestWithFile(ctx, http.MethodPost, "/_api/attachments.add", params, &at, file)
 	if err != nil {
 		return nil, err
 	}
 	return &at, nil
 }
 
-func (c *Client) AttachmentsList(ctx context.Context, id string) (*Attachments, error) {
+// List shows attachment list of the page. This request requires page_id
+func (s *AttachmentsService) List(ctx context.Context, id string) (*Attachments, error) {
 	var at Attachments
 	params := url.Values{}
-	params.Set("access_token", c.Token)
+	params.Set("access_token", s.client.Token)
 	params.Set("page_id", id)
-	err := c.newRequest(ctx, http.MethodGet, "/_api/attachments.list", params, &at)
+	err := s.client.newRequest(ctx, http.MethodGet, "/_api/attachments.list", params, &at)
 	if err != nil {
 		return nil, err
 	}
 	return &at, nil
-}
-
-type Attachments struct {
-	Attachments []Attachment `json:"attachments"`
-	OK          bool         `json:"ok"`
 }
 
 type Attachment struct {
-	ID           string             `json:"_id"`
-	FileFormat   string             `json:"fileFormat"`
-	FileName     string             `json:"fileName"`
-	OriginalName string             `json:"originalName"`
-	FilePath     string             `json:"filePath"`
-	Creator      AttachmentsCreator `json:"creator"`
-	Page         string             `json:"page"`
-	V            int                `json:"__v"`
-	CreatedAt    time.Time          `json:"createdAt"`
-	FileSize     int                `json:"fileSize"`
-	URL          string             `json:"url"`
+	Attachment AttachmentInfo `json:"attachment"`
+	Page       interface{}    `json:"page"`
+	OK         bool           `json:"ok"`
 }
 
-type AttachmentsCreator struct {
-	ID        string    `json:"_id"`
-	Password  string    `json:"password"`
-	Email     string    `json:"email"`
-	Username  string    `json:"username"`
-	Name      string    `json:"name"`
-	V         int       `json:"__v"`
-	APIToken  string    `json:"apiToken"`
-	Admin     bool      `json:"admin"`
-	CreatedAt time.Time `json:"createdAt"`
-	Status    int       `json:"status"`
-	Lang      string    `json:"lang"`
+type AttachmentInfo struct {
+	FileFormat   string      `json:"fileFormat"`
+	FileName     string      `json:"fileName"`
+	OriginalName string      `json:"originalName"`
+	FilePath     string      `json:"filePath"`
+	Creator      interface{} `json:"creator"`
+	ID           string      `json:"_id"`
+	CreatedAt    time.Time   `json:"createdAt"`
+	PageCreated  bool        `json:"pageCreated"`
+	URL          string      `json:"url"`
+	FileSize     int         `json:"fileSize"`
+	V            int         `json:"__v"`
+}
+
+type Attachments struct {
+	Attachments []AttachmentInfo `json:"attachments"`
+	OK          bool             `json:"ok"`
 }
