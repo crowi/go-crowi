@@ -76,6 +76,18 @@ func (s *PagesService) List(ctx context.Context, path, user string, opt *PagesLi
 	return &pages, nil
 }
 
+func (s *PagesService) Get(ctx context.Context, path string) (*Page, error) {
+	var page Page
+	params := url.Values{}
+	params.Set("access_token", s.client.config.Token)
+	params.Set("path", path)
+	err := s.client.newRequest(ctx, http.MethodGet, "/_api/pages.get", params, &page)
+	if err != nil {
+		return nil, err
+	}
+	return &page, nil
+}
+
 type Page struct {
 	Page  PageInfo `json:"page"`
 	OK    bool     `json:"ok"`
