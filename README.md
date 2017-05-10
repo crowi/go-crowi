@@ -3,39 +3,19 @@ go-crowi [![][travis-badge]][travis-link] [![][license-badge]][license-link] [![
 
 The official Go client for [Crowi](http://site.crowi.wiki/).
 
-## Getting
+## Getting started
 
-go-crowi supports up to [v1.6.0](https://github.com/crowi/crowi/releases/tag/v1.6.0).
+go-crowi supports up to [v1.6.1](https://github.com/crowi/crowi/releases/tag/v1.6.1).
 
 ```console
 $ go get github.com/crowi/go-crowi
 ```
 
-Currently, go-crowi implements the following endpoints:
+Methods currently implemented may be changed or added following the updating of Crowi API
 
-- `/_api/pages.create`
-- `/_api/pages.update`
-- `/_api/attachments.add`
+## Examples
 
-These may be changed or newly added as Crowi changes.
-
-## Example
-
-```go
-client, err := crowi.NewClient("http://localhost:3000", "abcdefghijklmnopqrstuvwxyz0123456789=")
-if err != nil {
-	panic(err)
-}
-
-res, err := client.PagesCreate("/user/john/memo", "# this is a sample")
-if err != nil {
-	panic(err)
-}
-
-if !res.OK {
-	log.Printf("[ERROR] %s", res.Error)
-}
-```
+Please refer to [here](./_example/) about how to use each APIs.
 
 ## License
 

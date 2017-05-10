@@ -1,9 +1,11 @@
-// Package crowi provides some Crowi APIs for Go
 package crowi
 
 import (
 	"bytes"
+	"context"
+	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -11,191 +13,179 @@ import (
 	"net/textproto"
 	"net/url"
 	"os"
+	"path"
 	"runtime"
-	"strconv"
-	"time"
-
-	"github.com/pkg/errors"
+	"strings"
 )
 
 const version = "0.1"
 
 var userAgent = fmt.Sprintf("CrowiGoClient/%s (%s)", version, runtime.Version())
 
-const (
-	apiPagesCreate    = "/_api/pages.create"
-	apiPagesUpdate    = "/_api/pages.update"
-	apiAttachmentsAdd = "/_api/attachments.add"
-)
-
-type API interface {
-	PagesCreate() (*Crowi, error)
-	PagesUpdate() (*Crowi, error)
-	AttachmentsAdd() (*Crowi, error)
-}
-
-// Client wraps http client
 type Client struct {
-	URL        *url.URL
-	Token      string
-	HTTPClient *http.Client
+	http.Client
+
+	config Config
+
+	common service // Reuse a single struct instead of allocating one for each service on the heap.
+
+	Pages       *PagesService
+	Attachments *AttachmentsService
 }
 
-// NewClient creates an API client
-func NewClient(apiURL, token string) (*Client, error) {
-	if len(apiURL) == 0 {
+type service struct {
+	client *Client
+}
+
+type ListOptions struct {
+	Pagenation bool
+}
+
+type Config struct {
+	URL                string
+	Token              string
+	InsecureSkipVerify bool
+}
+
+func NewClient(cfg Config) (*Client, error) {
+	if len(cfg.URL) == 0 {
 		return nil, errors.New("missing api url")
 	}
 
-	if len(token) == 0 {
+	if len(cfg.Token) == 0 {
 		return nil, errors.New("missing token")
 	}
 
-	parsedURL, err := url.ParseRequestURI(apiURL)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse url: %s", apiURL)
+	client := *http.DefaultClient
+	if cfg.InsecureSkipVerify {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		client = http.Client{Transport: tr}
 	}
 
-	return &Client{
-		URL:        parsedURL,
-		Token:      token,
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-	}, nil
+	c := &Client{
+		Client: client,
+		config: cfg,
+	}
+	c.common.client = c
+	c.Pages = (*PagesService)(&c.common)
+	c.Attachments = (*AttachmentsService)(&c.common)
+
+	return c, nil
 }
 
-func (c *Client) newRequest(method, resource string, data url.Values) (*http.Request, error) {
-	c.URL.Path = resource
-	urlStr := c.URL.String()
-
-	req, err := http.NewRequest(method, urlStr, bytes.NewBufferString(data.Encode()))
+func (c *Client) newRequest(ctx context.Context, method string, uri string, params interface{}, res interface{}) error {
+	u, err := url.Parse(c.config.URL)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	u.Path = path.Join(u.Path, uri)
+
+	values, ok := params.(url.Values)
+	if !ok {
+		return nil
 	}
 
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	var req *http.Request
+	var body io.Reader
+	if method == http.MethodGet {
+		u.RawQuery = values.Encode()
+	} else {
+		body = strings.NewReader(values.Encode())
+	}
+	req, err = http.NewRequest(method, u.String(), body)
+	if err != nil {
+		return err
+	}
+	req = req.WithContext(ctx)
 	req.Header.Set("User-Agent", userAgent)
-	req.Header.Set("Content-Length", strconv.Itoa(len(data.Encode())))
+	if params != nil {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
 
-	return req, nil
-}
-
-// PagesCreate makes a page in your Crowi. The request requires
-// the path and page content used for the page name
-func (c *Client) PagesCreate(path, body string) (*Crowi, error) {
-	data := url.Values{}
-	data.Set("access_token", c.Token)
-	data.Set("path", path)
-	data.Set("body", body)
-
-	req, err := c.newRequest("POST", apiPagesCreate, data)
+	resp, err := c.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	res, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var crowi Crowi
-	if err := decodeBody(res, &crowi); err != nil {
-		return nil, err
-	}
-
-	return &crowi, nil
-}
-
-// PagesUpdate updates the page content. A page_id is necessary to know which
-// page should be updated.
-func (c *Client) PagesUpdate(pageID, body string) (*Crowi, error) {
-	data := url.Values{}
-	data.Set("access_token", c.Token)
-	data.Set("page_id", pageID)
-	data.Set("body", body)
-
-	req, err := c.newRequest("POST", apiPagesUpdate, data)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var crowi Crowi
-	if err := decodeBody(res, &crowi); err != nil {
-		return nil, err
-	}
-
-	return &crowi, nil
-}
-
-func (c *Client) fileUpload(method, resource string, params map[string]string, filePath string) (*http.Request, error) {
-	c.URL.Path = resource
-	urlStr := c.URL.String()
-
-	var buffer bytes.Buffer
-	writer := multipart.NewWriter(&buffer)
-	for key, val := range params {
-		err := writer.WriteField(key, val)
-		if err != nil {
-			return nil, err
-		}
-	}
-	{
-		header := make(textproto.MIMEHeader)
-		header.Add("Content-Disposition", fmt.Sprintf(`form-data; name="file"; filename="%s"`, filePath))
-		header.Add("Content-Type", "image/png")
-		fileWriter, err := writer.CreatePart(header)
-		if err != nil {
-			return nil, err
-		}
-		file, err := os.Open(filePath)
-		if err != nil {
-			return nil, err
-		}
-		defer file.Close()
-		io.Copy(fileWriter, file)
-	}
-	writer.Close()
-
-	req, err := http.NewRequest(method, urlStr, &buffer)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("Content-Type", "multipart/form-data; boundary="+writer.Boundary())
-	req.Header.Set("User-Agent", userAgent)
-
-	return req, nil
-}
-
-// AttachmentsAdd attaches an image file to the page. This request requires
-// page_id and the image file path which you want to attach.
-func (c *Client) AttachmentsAdd(pageID, filePath string) (*Crowi, error) {
-	req, err := c.fileUpload("POST", apiAttachmentsAdd, map[string]string{
-		"access_token": c.Token,
-		"page_id":      pageID,
-	}, filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var crowi Crowi
-	if err := decodeBody(res, &crowi); err != nil {
-		return nil, err
-	}
-
-	return &crowi, nil
-}
-
-func decodeBody(resp *http.Response, out interface{}) error {
 	defer resp.Body.Close()
-	decoder := json.NewDecoder(resp.Body)
-	return decoder.Decode(out)
+
+	if resp.StatusCode != http.StatusOK {
+		return parseAPIError("bad request", resp)
+	} else if res == nil {
+		return nil
+	}
+	return json.NewDecoder(resp.Body).Decode(&res)
+}
+
+func (c *Client) newRequestWithFile(ctx context.Context, method string, uri string, params interface{}, res interface{}, file string) error {
+	u, err := url.Parse(c.config.URL)
+	if err != nil {
+		return err
+	}
+	u.Path = path.Join(u.Path, uri)
+
+	values, ok := params.(map[string]string)
+	if !ok {
+		return nil
+	}
+
+	var req *http.Request
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
+	for key, val := range values {
+		err := mw.WriteField(key, val)
+		if err != nil {
+			return err
+		}
+	}
+	header := make(textproto.MIMEHeader)
+	header.Add("Content-Disposition", fmt.Sprintf(`form-data; name="file"; filename="%s"`, file))
+	header.Add("Content-Type", "image/png")
+	fileWriter, err := mw.CreatePart(header)
+	if err != nil {
+		return err
+	}
+	f, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	io.Copy(fileWriter, f)
+	mw.Close()
+
+	req, err = http.NewRequest(method, u.String(), &buf)
+	if err != nil {
+		return err
+	}
+	req = req.WithContext(ctx)
+	req.Header.Add("Content-Type", "multipart/form-data; boundary="+mw.Boundary())
+	req.Header.Set("User-Agent", userAgent)
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return parseAPIError("bad request", resp)
+	} else if res == nil {
+		return nil
+	}
+	return json.NewDecoder(resp.Body).Decode(&res)
+}
+
+func parseAPIError(prefix string, resp *http.Response) error {
+	errMsg := fmt.Sprintf("%s: %s", prefix, resp.Status)
+	var e struct {
+		Error string `json:"error"`
+	}
+
+	json.NewDecoder(resp.Body).Decode(&e)
+	if e.Error != "" {
+		errMsg = fmt.Sprintf("%s: %s", errMsg, e.Error)
+	}
+
+	return errors.New(errMsg)
 }
