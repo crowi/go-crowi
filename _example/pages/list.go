@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
 	"log"
 	"os"
 	"time"
 
 	"github.com/crowi/go-crowi"
 	"github.com/k0kubun/pp"
+	"golang.org/x/net/context"
 )
 
 func main() {

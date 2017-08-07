@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/crowi/go-crowi"
 	"github.com/k0kubun/pp"
+	"golang.org/x/net/context"
 )
 
 func main() {

@@ -2,7 +2,6 @@ package crowi
 
 import (
 	"bytes"
-	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -16,6 +15,8 @@ import (
 	"path"
 	"runtime"
 	"strings"
+
+	"golang.org/x/net/context"
 )
 
 const version = "0.1"
