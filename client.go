@@ -2,7 +2,6 @@ package crowi
 
 import (
 	"bytes"
-	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -16,6 +15,9 @@ import (
 	"path"
 	"runtime"
 	"strings"
+
+	"golang.org/x/net/context"
+	"golang.org/x/net/context/ctxhttp"
 )
 
 const version = "0.1"
@@ -98,13 +100,12 @@ func (c *Client) newRequest(ctx context.Context, method string, uri string, para
 	if err != nil {
 		return err
 	}
-	req = req.WithContext(ctx)
 	req.Header.Set("User-Agent", userAgent)
 	if params != nil {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
 
-	resp, err := c.Do(req)
+	resp, err := ctxhttp.Do(ctx, &c.Client, req)
 	if err != nil {
 		return err
 	}
@@ -158,11 +159,10 @@ func (c *Client) newRequestWithFile(ctx context.Context, method string, uri stri
 	if err != nil {
 		return err
 	}
-	req = req.WithContext(ctx)
 	req.Header.Add("Content-Type", "multipart/form-data; boundary="+mw.Boundary())
 	req.Header.Set("User-Agent", userAgent)
 
-	resp, err := c.Do(req)
+	resp, err := ctxhttp.Do(ctx, &c.Client, req)
 	if err != nil {
 		return err
 	}

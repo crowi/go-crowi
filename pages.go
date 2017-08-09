@@ -1,11 +1,12 @@
 package crowi
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 	"time"
+
+	"golang.org/x/net/context"
 )
 
 // PagesService handles communication with the Pages related
